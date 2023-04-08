@@ -5,6 +5,7 @@ email: matejfrolik1@seznam.cz
 discord: Mates F.#4204
 '''
 
+'Budu rád za jakýkoliv + a - mého projektu, abych si ho mohl dostatečně vylepšit v rámci rychlosti běhu dotazů atd.'
 
 -- Tabulky:
 -- t_{jmeno}_{prijmeni}_project_SQL_primary_final 
