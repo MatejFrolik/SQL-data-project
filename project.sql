@@ -86,4 +86,13 @@ CREATE OR REPLACE TABLE assist3 AS (
 );
 SELECT * FROM assist3;
 
---
+-- Vytvoření finální tabulky pro odpovězení otázek
+
+REATE OR REPLACE TABLE t_Matej_Frolik_project_SQL_primary_final AS (
+	SELECT *
+	FROM assist2 AS  a2
+	JOIN assist1 AS a1 ON a1.price_year = a2.payroll_year
+	JOIN assist3 AS a3 ON a3.gdp_year = a1.price_year 
+);
+SELECT * FROM t_Matej_Frolik_project_SQL_primary_final ;
+
