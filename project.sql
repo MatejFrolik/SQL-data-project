@@ -19,15 +19,17 @@ discord: Mates F.#4204
 -- (je u ní nejnižší percentuální meziroční nárůst)?
 -- 4. Existuje rok, ve kterém byl meziroční nárůst 
 -- cen potravin výrazně vyšší než růst mezd (větší než 10 %)?
--- 5. Má výška HDP vliv na změny ve mzdách a cenách potravin? Neboli, pokud HDP vzroste výrazněji v jednom roce, projeví se to na cenách potravin či mzdách ve stejném nebo násdujícím roce výraznějším růstem?
+-- 5. Má výška HDP vliv na změny ve mzdách a cenách potravin? Neboli, 
+-- pokud HDP vzroste výrazněji v jednom roce, 
+-- projeví se to na cenách potravin či mzdách ve stejném nebo násdujícím roce výraznějším růstem?
 
 -- Tabulky a TODO list:
 -- 1. Otázka: czechia_payroll(value,industry_branch code,payroll_year),
 -- czechia_payroll_industry_branch(calculation, unit, value_type)
 -- TODO - součet/průměr mezd za jednotlivý rok, roztřídit podle kategorií,
 -- seřadit podle roku nebo podle mzdy
--- 2. Otázka: czechia_payroll(value,payroll_year,), czechia_price(value, category_code, date_from(to)), czechia_price_category(
--- code, name, price_value, price_unit)
+-- 2. Otázka: czechia_payroll(value,payroll_year,), czechia_price(value, category_code, 
+-- date_from(to)), czechia_price_category(code, name, price_value, price_unit)
 -- TODO - první srovnatelné období bude rok 2006 a poslední bude rok 2018,
 -- z těhle let zjistit prumernou cenu a prumernou mzdu a vydělit mezi sebou,
 -- tím získáme počet litrů a kg za jednotlivé roky 
@@ -53,7 +55,8 @@ discord: Mates F.#4204
 -- Vytvoření tabulky pro czechia_price a potřebné sloupce
 
 CREATE OR REPLACE TABLE assist1 AS (
-	SELECT cpc.name AS foodstuff_name , year(cp.date_from) AS price_year, round(avg(cp.value),1) cost, cpc.price_value, cpc.price_unit 
+	SELECT cpc.name AS foodstuff_name , year(cp.date_from) AS price_year, 
+        round(avg(cp.value),1) cost, cpc.price_value, cpc.price_unit 
 	FROM czechia_price cp 
 	LEFT JOIN czechia_price_category cpc ON cpc.code = cp.category_code 
 	WHERE year(cp.date_from) BETWEEN 2006 AND 2018
@@ -119,7 +122,18 @@ ORDER BY t.branch_name, t.payroll_year;
 
 -- Zopovězení otázky č. 2 - Kolik je možné si koupit litrů mléka a kilogramů chleba za první 
 --                          a poslední srovnatelné období v dostupných datech cen a mezd?
+-- Tímto dotazem získáme přehled, kolik je možno si koupit l mléka a kg chleba za jednotlivé roky
 
-
+WITH max_min as(
+SELECT min(salary), max(salary)
+FROM t_Matej_Frolik_project_SQL_primary_final 
+WHERE branch_name IS NULL
+)
+SELECT foodstuff_name, price_year, cost, 
+	round((max(salary) / cost), 2) AS milk_bread_quantity, price_value, price_unit 
+FROM t_Matej_Frolik_project_SQL_primary_final
+WHERE foodstuff_name IN ('Mléko polotučné pasterované', 'Chléb konzumní kmínový') 
+	  AND branch_name IS NULL 
+GROUP BY foodstuff_name, price_year;
 
 
