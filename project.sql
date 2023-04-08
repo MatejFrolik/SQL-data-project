@@ -46,8 +46,6 @@ discord: Mates F.#4204
 -- TODO - zjistit meziroční nárusty GDP v procentech a porovnat to s 
 -- meziročníma nárůstama v procentech u potravin a mzdách
 
--- Hodnoty null u industry branch code jsou uhrny za vsechny odvetvi
-
 -- 1. Vytvoření tabulek pro zodpovězení otázek:
 -- Postupné vytvoření tří tabulek, z které pak vytvoříme finální verzi. 
 -- Tabulky budou obsahovat souhrné roky pro všechny tři v rozmezí 2006 až 2018.
@@ -96,6 +94,8 @@ REATE OR REPLACE TABLE t_Matej_Frolik_project_SQL_primary_final AS (
 );
 SELECT * FROM t_Matej_Frolik_project_SQL_primary_final ;
 
+-- Hodnoty null u branch_name značí úhrn za všechna odvětví jednotlivý rok
+
 -- Vytvoření finální tabulky č.2 pro informace o dalších státech
 
 CREATE OR REPLACE TABLE t_Matej_Frolik_project_SQL_secondary_final AS (
@@ -104,3 +104,22 @@ FROM countries c
 LEFT JOIN economies e ON c.country = e.country
 );
 SELECT * FROM t_Matej_Frolik_project_SQL_secondary_final ;
+
+-- Zodpovězení otázky č. 1 - Rostou v průběhu let mzdy ve všech odvětvích, nebo v některých klesají?
+-- Z daného dotazu dokážeme zjistit, že v 15 z 19 odvětví byl alespoň jeden rok, kdy mzda klesala
+
+SELECT t.branch_name, t.payroll_year, t2.payroll_year + 1 AS year_prew, 
+	   round( (t.salary - t2.salary) / t2.salary * 100, 1) AS salary_growth_percent
+FROM t_Matej_Frolik_project_SQL_primary_final t
+JOIN t_Matej_Frolik_project_SQL_primary_final t2 
+	ON t.branch_name = t2.branch_name
+	AND t.payroll_year = t2.payroll_year + 1
+GROUP BY t.payroll_year, t2.payroll_year, t.branch_name
+ORDER BY t.branch_name, t.payroll_year;
+
+-- Zopovězení otázky č. 2 - Kolik je možné si koupit litrů mléka a kilogramů chleba za první 
+--                          a poslední srovnatelné období v dostupných datech cen a mezd?
+
+
+
+
