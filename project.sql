@@ -22,11 +22,11 @@ discord: Mates F.#4204
 -- projeví se to na cenách potravin či mzdách ve stejném nebo násdujícím roce výraznějším růstem?
 
 --   Tabulka zahrnující vše potřebné: 
---  		1. Otázka: czechia_payroll(id,value,industry_branch code,payroll_year),
---  				   czechia_payroll_industry_branch
+--  		1. Otázka: czechia_payroll(value,industry_branch code,payroll_year),
+--  				   czechia_payroll_industry_branch(calculation, unit, value_type)
 --  		   TODO - součet/průměr mezd za jednotlivý rok, roztřídit podle kategorií,
 -- 	    	          seřadit podle roku nebo podle mzdy
---  		2. Otázka: czechia_payroll(id,value,payroll_year,), czechia_price(
+--  		2. Otázka: czechia_payroll(value,payroll_year,), czechia_price(
 --  				   id, value, category_code, date_from(to)), czechia_price_category(
 --                     code, name, price_value, price_unit)
 -- 		       TODO - první srovnatelné období bude rok 2006 a poslední bude rok 2018,
@@ -39,11 +39,12 @@ discord: Mates F.#4204
 -- 				      zjistit celkovou cenu za jeden rok, za druhý rok, odečíst od sebe druhý a 
 -- 				      první rok, zjistit kolik je jedno procento z první ceny, vydělit odečtenou 
 -- 				      hodnotu se zjistenim jednim procentem a tohle je narust v procentech
---  		4. Otázka: czechia_payroll(id, value, payroll_year, payroll_quarter),
+--  		4. Otázka: czechia_payroll(value, payroll_year),
 --  				   czechia_price(id, value, date_from(to)
 -- 		       TODO - zjistit to co v minulé otázce pro roky od 2006 do 2018, ale navíc i 
 -- 				      pro mzdy, o kolik je X větší než Y - (x-y)/y*100
---  		5. Otázka: czechia_payroll(id, value, payroll_year), czeachia_price(id, value, 
+--  		5. Otázka: czechia_payroll(value, payroll_year), czeachia_price(id, value, 
 -- 				       date_from(to)), economies(year, GDP), countries(country)
 -- 		       TODO - zjistit meziroční nárusty GDP v procentech a porovnat to s 
 -- 				      meziročníma nárůstama v procentech u potravin a mzdách
+
