@@ -75,3 +75,15 @@ CREATE OR REPLACE TABLE assist2 AS (
 );
 SELECT * FROM assist2;
 
+-- Vytvoření tabulky pro economies a countrie a potřebné sloupce
+
+CREATE OR REPLACE TABLE assist3 AS (
+	SELECT c.country, e.gdp , e.`year`  AS gdp_year
+	FROM economies e
+	LEFT JOIN countries c ON e.country = c.country 
+	WHERE c.country LIKE 'Czech Republic' AND e.`year` BETWEEN 2006 AND 2018
+
+);
+SELECT * FROM assist3;
+
+--
