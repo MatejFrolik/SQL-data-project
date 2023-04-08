@@ -96,3 +96,11 @@ REATE OR REPLACE TABLE t_Matej_Frolik_project_SQL_primary_final AS (
 );
 SELECT * FROM t_Matej_Frolik_project_SQL_primary_final ;
 
+-- Vytvoření finální tabulky č.2 pro informace o dalších státech
+
+CREATE OR REPLACE TABLE t_Matej_Frolik_project_SQL_secondary_final AS (
+SELECT c.*, e.country AS eco_country, e.`year` , e.GDP, e.population eco_population, e.gini 
+FROM countries c 
+LEFT JOIN economies e ON c.country = e.country
+);
+SELECT * FROM t_Matej_Frolik_project_SQL_secondary_final ;
