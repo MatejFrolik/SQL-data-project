@@ -111,7 +111,7 @@ SELECT * FROM t_Matej_Frolik_project_SQL_secondary_final ;
 -- Zodpovězení otázky č. 1 - Rostou v průběhu let mzdy ve všech odvětvích, nebo v některých klesají?
 -- Z daného dotazu dokážeme zjistit, že v 15 z 19 odvětví byl alespoň jeden rok, kdy mzda klesala
 
-SELECT t.branch_name, t.payroll_year, t2.payroll_year + 1 AS year_prew, 
+SELECT t.branch_name, t.payroll_year, t2.payroll_year AS year_prew, 
 	   round( (t.salary - t2.salary) / t2.salary * 100, 1) AS salary_growth_percent
 FROM t_Matej_Frolik_project_SQL_primary_final t
 JOIN t_Matej_Frolik_project_SQL_primary_final t2 
@@ -136,4 +136,32 @@ WHERE foodstuff_name IN ('Mléko polotučné pasterované', 'Chléb konzumní km
 	  AND branch_name IS NULL 
 GROUP BY foodstuff_name, price_year;
 
+
+-- Zodpovězení otázky č. 3 - Která kategorie potravin zdražuje nejpomaleji 
+--                           (je u ní nejnižší percentuální meziroční nárůst)?
+-- Zodpovězení otázky pomocí VIEW a následných dotazů
+
+CREATE OR REPLACE VIEW neco as(
+SELECT t.foodstuff_name, t.price_year, t2.price_year AS prew_year, t.cost, t2.cost cost_prew,
+	   round(((t.cost - t2.cost) / t2.cost * 100), 2) AS growth
+FROM t_Matej_Frolik_project_SQL_primary_final t
+JOIN t_Matej_Frolik_project_SQL_primary_final t2 
+	ON t.foodstuff_name = t2.foodstuff_name
+	AND t.price_year = t2.price_year + 1
+GROUP BY foodstuff_name, price_year);
+
+SELECT foodstuff_name, sum(growth),
+CASE 
+	WHEN sum(growth) < 10 THEN 'nízky meziroční nárůst'
+	WHEN sum(growth) < 40 THEN 'střední meziroční nárůst'
+	ELSE 'vysoký meziroční nárůst'
+END AS neco
+FROM neco
+GROUP BY foodstuff_name
+ORDER BY sum(growth);
+
+SELECT foodstuff_name, sum(growth)
+FROM neco
+GROUP BY foodstuff_name
+ORDER BY sum(growth) ;
 
