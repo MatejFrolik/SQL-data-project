@@ -139,9 +139,9 @@ GROUP BY foodstuff_name, price_year;
 
 -- Zodpovězení otázky č. 3 - Která kategorie potravin zdražuje nejpomaleji 
 --                           (je u ní nejnižší percentuální meziroční nárůst)?
--- Zodpovězení otázky pomocí VIEW a následných dotazů
+-- Zodpovězení otázky pomocí VIEW
 
-CREATE OR REPLACE VIEW neco as(
+CREATE OR REPLACE VIEW interannual_growth as(
 SELECT t.foodstuff_name, t.price_year, t2.price_year AS prew_year, t.cost, t2.cost cost_prew,
 	   round(((t.cost - t2.cost) / t2.cost * 100), 2) AS growth
 FROM t_Matej_Frolik_project_SQL_primary_final t
@@ -156,12 +156,31 @@ CASE
 	WHEN sum(growth) < 40 THEN 'střední meziroční nárůst'
 	ELSE 'vysoký meziroční nárůst'
 END AS neco
-FROM neco
+FROM interannual_growth
 GROUP BY foodstuff_name
-ORDER BY sum(growth);
+ORDER BY sum(growth); --dotaz pro rozdělení nárůstů
 
 SELECT foodstuff_name, sum(growth)
-FROM neco
+FROM interannual_growth
 GROUP BY foodstuff_name
-ORDER BY sum(growth) ;
+ORDER BY sum(growth); --dotaz pro kategorii s nejnižším meziročním nárůstem
 
+-- Zodpovězení otázky č. 4 - 4. Existuje rok, ve kterém byl meziroční nárůst 
+--                              cen potravin výrazně vyšší než růst mezd (větší než 10 %)?
+-- Z dotazu otázky č. 1. vytvoříme view
+
+CREATE OR REPLACE VIEW salary_growth AS (
+SELECT t.branch_name, t.payroll_year, t2.payroll_year AS year_prew, 
+	   round( (t.salary - t2.salary) / t2.salary * 100, 1) AS salary_growth_percent
+FROM t_Matej_Frolik_project_SQL_primary_final t
+JOIN t_Matej_Frolik_project_SQL_primary_final t2 
+	ON t.branch_name = t2.branch_name
+	AND t.payroll_year = t2.payroll_year + 1
+GROUP BY t.payroll_year, t2.payroll_year, t.branch_name
+ORDER BY t.branch_name, t.payroll_year);
+
+SELECT sg.payroll_year, avg(sg.salary_growth_percent), avg(ig.growth),
+	   concat((avg(ig.growth)-avg(sg.salary_growth_percent)),' diff in %') AS difference
+FROM salary_growth sg
+JOIN interannual_growth ig ON sg.payroll_year = ig.price_year
+GROUP BY sg.payroll_year, ig.price_year; --použijeme view z předchozí otázky a dotazem si zobrazíme rozdíly 
