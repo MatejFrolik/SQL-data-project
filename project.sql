@@ -55,7 +55,7 @@ discord: Mates F.#4204
 -- Vytvoření tabulky pro czechia_price a potřebné sloupce
 
 CREATE OR REPLACE TABLE assist1 AS (
-	SELECT cpc.name AS foodstuff_name , year(cp.date_from) AS price_year, cp.value cost, cpc.price_value, cpc.price_unit 
+	SELECT cpc.name AS foodstuff_name , year(cp.date_from) AS price_year, round(avg(cp.value),1) cost, cpc.price_value, cpc.price_unit 
 	FROM czechia_price cp 
 	LEFT JOIN czechia_price_category cpc ON cpc.code = cp.category_code 
 	WHERE year(cp.date_from) BETWEEN 2006 AND 2018
@@ -63,4 +63,15 @@ CREATE OR REPLACE TABLE assist1 AS (
 );
 SELECT * FROM assist1;
 
+
+-- Vytvoření tabulky pro czechia_payroll a potřebné sloupce
+
+CREATE OR REPLACE TABLE assist2 AS (
+	SELECT cpib.name AS branch_name , cp.payroll_year , round(avg(cp.value),0) AS salary
+	FROM czechia_payroll cp 
+	LEFT JOIN czechia_payroll_industry_branch cpib ON cpib.code = cp.industry_branch_code 
+	WHERE cp.value_type_code = 5958 AND cp.payroll_year BETWEEN 2006 AND 2018
+	GROUP BY cp.payroll_year, cpib.name 
+);
+SELECT * FROM assist2;
 
