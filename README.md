@@ -33,7 +33,7 @@ K projektu jsou použity datové sady z Portálu otevřených dat ČR.
 ---
 
 ## Průběh projektu
-1. V první fázi projektu je třeba si vytvořit dvě tabulky a to první tabulku s názvem t_Matej_Frolik_project_SQL_primary_final, kde získáme potřebné sloupce pro zodpovězení výzkumných otázek a druhou tabulku s názvem t_Matej_Frolik_project_SQL_secondary_final, která bude obsahovat data pro ostatní státy. K vytvoření první tabulky jsou vytvořeny tři pomocné tabulky (czechia_price_assist, czechia_payroll_assist a czechia_gdp_assist) ze kterých pak výsledná tabulky vychází. 
+1. V první fázi projektu je třeba si vytvořit dvě tabulky a to první tabulku s názvem **t_Matej_Frolik_project_SQL_primary_final**, kde získáme potřebné sloupce pro zodpovězení výzkumných otázek a druhou tabulku s názvem **t_Matej_Frolik_project_SQL_secondary_final**, která bude obsahovat data pro ostatní státy. K vytvoření první tabulky jsou vytvořeny tři pomocné tabulky (czechia_price_assist, czechia_payroll_assist a czechia_gdp_assist) ze kterých pak výsledná tabulky vychází. 
 
 ```
 CREATE OR REPLACE TABLE czechia_price_assist AS (
@@ -76,7 +76,7 @@ FROM countries c
 LEFT JOIN economies e ON c.country = e.country
 ```
 
-2. U zodpovězení první otázky (Rostou v průběhu let mzdy ve všech odvětvích, nebo v některých klesají) si nejprve necháme načíst procentuální růst nebo pokles mezd pro jednotlivé odvětví a roky a druhým dotazem vybere jen ty odvětví, ve kterých nám mzda alespoň jednou klesala, čímž, zjistíme, že v **15 odvětví** nám mzda ale jednou za dané období klesala. 
+2. U zodpovězení první otázky _Rostou v průběhu let mzdy ve všech odvětvích, nebo v některých klesají?_ si nejprve necháme načíst procentuální růst nebo pokles mezd pro jednotlivé odvětví a roky a druhým dotazem vybere jen ty odvětví, ve kterých nám mzda alespoň jednou klesala, čímž, zjistíme, že v **15 odvětví** nám mzda ale jednou za dané období klesala. 
 
 ```
 SELECT t.branch_name, t.payroll_year, t2.payroll_year AS year_prew, 
@@ -101,7 +101,7 @@ ORDER BY t.branch_name, t.payroll_year)
 SELECT DISTINCT (branch_name)
 FROM salary_growth;
 ```
-3. U zodpovězení druhé otázky si z naší tabulky necháme načíst přehled, kolik je možné si koupit litrů mléka a kilogramů chleba za jednotlivé roky. Z toho vyčteme, že např. u srovnání roků 2006 a 2018, je možné si v roce 2006 koupit za průměrný plat **1,192.25 kg chleba a 1,330.96 l mléka a v roce 2018 1,300.37 kg chleba a 1,590.36 l mléka**.
+3. U zodpovězení druhé otázky _Kolik je možné si koupit litrů mléka a kilogramů chleba za první a poslední srovnatelné období v dostupných datech cen a mezd?_ si z naší tabulky necháme načíst přehled, kolik je možné si koupit litrů mléka a kilogramů chleba za jednotlivé roky. Z toho vyčteme, že např. u srovnání roků 2006 a 2018, je možné si v roce 2006 koupit za průměrný plat **1,192.25 kg chleba a 1,330.96 l mléka a v roce 2018 1,300.37 kg chleba a 1,590.36 l mléka**.
 
 ```
 WITH max_min AS(
@@ -117,7 +117,7 @@ WHERE foodstuff_name IN ('Mléko polotučné pasterované', 'Chléb konzumní km
 GROUP BY foodstuff_name, price_year;
 ```
 
-4. U zodpovězení třetí otázky (Která kategorie potravin zdražuje nejpomaleji (je u ní nejnižší percentuální meziroční nárůst)?) si nejprve vytvoříme VIEW, pomocí kterého si poté výrazem CASE roztřídíme nárůsty jednotlivých kategorií potravin do tří skupin s nejnižším, středním a nejvyšším nárůstem. V dalším dotazu pak zjistíme, že potravina s nejnižším meziročním procentuálním nárůstem je **cukr krystalový**.
+4. U zodpovězení třetí otázky _Která kategorie potravin zdražuje nejpomaleji (je u ní nejnižší percentuální meziroční nárůst)?_ si nejprve vytvoříme VIEW, pomocí kterého si poté výrazem CASE roztřídíme nárůsty jednotlivých kategorií potravin do tří skupin s nejnižším, středním a nejvyšším nárůstem. V dalším dotazu pak zjistíme, že potravina s nejnižším meziročním procentuálním nárůstem je **cukr krystalový**.
 
 ```
 CREATE OR REPLACE VIEW interannual_growth AS(
@@ -143,4 +143,34 @@ SELECT foodstuff_name, sum(growth)
 FROM interannual_growth
 GROUP BY foodstuff_name
 ORDER BY sum(growth);
+```
+
+5. U zodpovězení čtvrté otázky _Existuje rok, ve kterém byl meziroční nárůst cen potravin výrazně vyšší než růst mezd (větší než 10 %)?_ si nejdříve vytvoříme VIEW. Pomocí něhož v druhém dotazu získáme procentuální rozdíl meziročního nárůstu mezd a cen potravin. Závěrečným dotazem pak zjistíme, že v žádném roce nebyl nárůst cen potravin vyšší než 10% oproti nárůstu mezd.
+
+```
+CREATE OR REPLACE VIEW salary_growth AS (
+SELECT t.branch_name, t.payroll_year, t2.payroll_year AS year_prew, 
+	   round( (t.salary - t2.salary) / t2.salary * 100, 1) AS salary_growth_percent
+FROM t_Matej_Frolik_project_SQL_primary_final t
+JOIN t_Matej_Frolik_project_SQL_primary_final t2 
+	ON t.branch_name = t2.branch_name
+	AND t.payroll_year = t2.payroll_year + 1
+GROUP BY t.payroll_year, t2.payroll_year, t.branch_name
+ORDER BY t.branch_name, t.payroll_year);
+
+SELECT sg.payroll_year, avg(sg.salary_growth_percent), avg(ig.growth),
+	   concat((avg(ig.growth)-avg(sg.salary_growth_percent)),' diff in %') AS difference
+FROM salary_growth sg
+JOIN interannual_growth ig ON sg.payroll_year = ig.price_year
+GROUP BY sg.payroll_year, ig.price_year;
+
+WITH foodstuff_salary_growth AS(
+SELECT sg.payroll_year, avg(sg.salary_growth_percent) AS sal_growth, avg(ig.growth) AS food_growth,
+	   concat((avg(ig.growth)-avg(sg.salary_growth_percent)),' diff in %') AS difference
+FROM salary_growth sg
+JOIN interannual_growth ig ON sg.payroll_year = ig.price_year
+GROUP BY sg.payroll_year, ig.price_year)
+SELECT DISTINCT(payroll_year)
+FROM foodstuff_salary_growth
+WHERE(food_growth-sal_growth)>10;
 ```
