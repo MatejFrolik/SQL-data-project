@@ -101,4 +101,19 @@ ORDER BY t.branch_name, t.payroll_year)
 SELECT DISTINCT (branch_name)
 FROM salary_growth;
 ```
-3.  
+3. U zodpovězení druhé otázky si z naší tabulky necháme načíst přehled, kolik je možné si koupit litrů mléka a kilogramů chleba za jednotlivé roky. Z toho vyčteme, že např. u srovnání roků 2006 a 2018, je možné si v roce 2006 koupit za průměrný plat 1,192.25 kg chleba a 1,330.96 l mléka a v roce 2018 1,300.37 kg chleba a 1,590.36 l mléka.
+
+```
+WITH max_min AS(
+SELECT min(salary), max(salary)
+FROM t_Matej_Frolik_project_SQL_primary_final 
+WHERE branch_name IS NULL
+)
+SELECT foodstuff_name, price_year, cost, 
+	round((max(salary) / cost), 2) AS milk_bread_quantity, price_value, price_unit 
+FROM t_Matej_Frolik_project_SQL_primary_final
+WHERE foodstuff_name IN ('Mléko polotučné pasterované', 'Chléb konzumní kmínový') 
+	  AND branch_name IS NULL 
+GROUP BY foodstuff_name, price_year;
+```
+
