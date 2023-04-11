@@ -63,7 +63,6 @@ CREATE OR REPLACE TABLE assist1 AS (
 	WHERE year(cp.date_from) BETWEEN 2006 AND 2018
 	GROUP BY year(cp.date_from), cpc.name
 );
-SELECT * FROM assist1;
 
 
 -- Vytvoření tabulky pro czechia_payroll a potřebné sloupce
@@ -75,7 +74,6 @@ CREATE OR REPLACE TABLE assist2 AS (
 	WHERE cp.value_type_code = 5958 AND cp.payroll_year BETWEEN 2006 AND 2018
 	GROUP BY cp.payroll_year, cpib.name 
 );
-SELECT * FROM assist2;
 
 -- Vytvoření tabulky pro economies a countrie a potřebné sloupce
 
@@ -86,11 +84,11 @@ CREATE OR REPLACE TABLE assist3 AS (
 	WHERE c.country LIKE 'Czech Republic' AND e.`year` BETWEEN 2006 AND 2018
 
 );
-SELECT * FROM assist3;
+
 
 -- Vytvoření finální tabulky pro odpovězení otázek
 
-REATE OR REPLACE TABLE t_Matej_Frolik_project_SQL_primary_final AS (
+CREATE OR REPLACE TABLE t_Matej_Frolik_project_SQL_primary_final AS (
 	SELECT *
 	FROM assist2 AS  a2
 	JOIN assist1 AS a1 ON a1.price_year = a2.payroll_year
@@ -107,7 +105,7 @@ SELECT c.*, e.country AS eco_country, e.`year` , e.GDP, e.population eco_populat
 FROM countries c 
 LEFT JOIN economies e ON c.country = e.country
 );
-SELECT * FROM t_Matej_Frolik_project_SQL_secondary_final ;
+
 
 -- Zodpovězení otázky č. 1 - Rostou v průběhu let mzdy ve všech odvětvích, nebo v některých klesají?
 -- Z daného dotazu dokážeme zjistit, že v 15 z 19 odvětví byl alespoň jeden rok, kdy mzda klesala
@@ -125,7 +123,7 @@ ORDER BY t.branch_name, t.payroll_year;
 --                          a poslední srovnatelné období v dostupných datech cen a mezd?
 -- Tímto dotazem získáme přehled, kolik je možno si koupit l mléka a kg chleba za jednotlivé roky
 
-WITH max_min as(
+WITH max_min AS(
 SELECT min(salary), max(salary)
 FROM t_Matej_Frolik_project_SQL_primary_final 
 WHERE branch_name IS NULL
@@ -142,7 +140,7 @@ GROUP BY foodstuff_name, price_year;
 --                           (je u ní nejnižší percentuální meziroční nárůst)?
 -- Zodpovězení otázky pomocí pohledu
 
-CREATE OR REPLACE VIEW interannual_growth as(
+CREATE OR REPLACE VIEW interannual_growth AS(
 SELECT t.foodstuff_name, t.price_year, t2.price_year AS prew_year, t.cost, t2.cost cost_prew,
 	   round(((t.cost - t2.cost) / t2.cost * 100), 2) AS growth
 FROM t_Matej_Frolik_project_SQL_primary_final t
@@ -156,7 +154,7 @@ CASE
 	WHEN sum(growth) < 10 THEN 'nízky meziroční nárůst'
 	WHEN sum(growth) < 40 THEN 'střední meziroční nárůst'
 	ELSE 'vysoký meziroční nárůst'
-END AS neco
+END AS interannual_prices_growth
 FROM interannual_growth
 GROUP BY foodstuff_name
 ORDER BY sum(growth); --dotaz pro rozdělení nárůstů
@@ -199,7 +197,6 @@ JOIN t_Matej_Frolik_project_SQL_primary_final t2
 	AND t.gdp_year = t2.gdp_year + 1
 GROUP BY gdp_year); --vytvoření pohledu pro percentuální nárůst HDP v České republice
 
-SELECT * FROM gdp_growth;
 
 SELECT sg.payroll_year, 
 	   avg(sg.salary_growth_percent) AS salary_percent_growth, 
