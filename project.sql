@@ -67,7 +67,7 @@ CREATE OR REPLACE TABLE assist1 AS (
 
 -- Vytvoření tabulky pro czechia_payroll a potřebné sloupce
 
-CREATE OR REPLACE TABLE assist2 AS (
+CREATE OR REPLACE TABLE czechia_payroll_assist AS (
 	SELECT cpib.name AS branch_name , cp.payroll_year , round(avg(cp.value),0) AS salary
 	FROM czechia_payroll cp 
 	LEFT JOIN czechia_payroll_industry_branch cpib ON cpib.code = cp.industry_branch_code 
@@ -77,7 +77,7 @@ CREATE OR REPLACE TABLE assist2 AS (
 
 -- Vytvoření tabulky pro economies a countrie a potřebné sloupce
 
-CREATE OR REPLACE TABLE assist3 AS (
+CREATE OR REPLACE TABLE czechia_gdp_assist AS (
 	SELECT c.country, e.gdp , e.`year`  AS gdp_year
 	FROM economies e
 	LEFT JOIN countries c ON e.country = c.country 
