@@ -145,7 +145,7 @@ GROUP BY foodstuff_name
 ORDER BY sum(growth);
 ```
 
-5. U zodpovězení čtvrté otázky _Existuje rok, ve kterém byl meziroční nárůst cen potravin výrazně vyšší než růst mezd (větší než 10 %)?_ si nejdříve vytvoříme VIEW. Pomocí něhož v druhém dotazu získáme procentuální rozdíl meziročního nárůstu mezd a cen potravin. Závěrečným dotazem pak zjistíme, že v žádném roce nebyl nárůst cen potravin vyšší než 10% oproti nárůstu mezd.
+5. U zodpovězení čtvrté otázky _Existuje rok, ve kterém byl meziroční nárůst cen potravin výrazně vyšší než růst mezd (větší než 10 %)?_ si nejdříve vytvoříme VIEW. Pomocí něhož v druhém dotazu získáme procentuální rozdíl meziročního nárůstu mezd a cen potravin. Závěrečným dotazem pak zjistíme, že v **žádném roce nebyl nárůst cen potravin vyšší než 10% oproti nárůstu mezd.**
 
 ```
 CREATE OR REPLACE VIEW salary_growth AS (
@@ -173,4 +173,27 @@ GROUP BY sg.payroll_year, ig.price_year)
 SELECT DISTINCT(payroll_year)
 FROM foodstuff_salary_growth
 WHERE(food_growth-sal_growth)>10;
+```
+
+6. U poslední páté otázky _Má výška HDP vliv na změny ve mzdách a cenách potravin? Neboli, pokud HDP vzroste výrazněji v jednom roce, projeví se to na cenách potravin či mzdách ve stejném nebo násdujícím roce výraznějším růstem?_ si po vytvoření pomocného VIEW necháme načíst tabulky, kde máme porovnání procentuální nárůstu u cen potravin, mzdách a HDP. Ve srovnání pak vidíme, **že nárůst nebo pokles HDP nám pavidelně neovlivňuje nárůst či pokled mezd nebo cen potravin.**
+
+```
+CREATE OR REPLACE VIEW gdp_growth AS (
+SELECT t.gdp_year, t2.gdp_year AS prew_year,
+	   round( (t.gdp - t2.gdp) / t2.gdp * 100, 1 ) AS gdp_growth_percent
+FROM t_Matej_Frolik_project_SQL_primary_final t
+JOIN t_Matej_Frolik_project_SQL_primary_final t2
+	ON t.country = t2.country
+	AND t.gdp_year = t2.gdp_year + 1
+GROUP BY gdp_year); 
+
+
+SELECT sg.payroll_year, 
+	   avg(sg.salary_growth_percent) AS salary_percent_growth, 
+	   avg(ig.growth) AS price_percent_growth, 
+	   avg(gg.gdp_growth_percent) AS gdp_percent_growth
+FROM salary_growth sg
+JOIN interannual_growth ig ON sg.payroll_year = ig.price_year
+JOIN gdp_growth gg ON gg.gdp_year = sg.payroll_year
+GROUP BY sg.payroll_year, ig.price_year, gg.gdp_year; 
 ```
