@@ -76,7 +76,7 @@ FROM countries c
 LEFT JOIN economies e ON c.country = e.country
 ```
 
-2. U zodpovězení první otázky (Rostou v průběhu let mzdy ve všech odvětvích, nebo v některých klesají) si nejprve necháme načíst procentuální růst nebo pokles mezd pro jednotlivé odvětví a roky a druhým dotazem vybere jen ty odvětví, ve kterých nám mzda alespoň jednou klesala, čímž, zjistíme, že v 15 odvětví nám mzda ale jednou za dané období klesala. 
+2. U zodpovězení první otázky (Rostou v průběhu let mzdy ve všech odvětvích, nebo v některých klesají) si nejprve necháme načíst procentuální růst nebo pokles mezd pro jednotlivé odvětví a roky a druhým dotazem vybere jen ty odvětví, ve kterých nám mzda alespoň jednou klesala, čímž, zjistíme, že v **15 odvětví** nám mzda ale jednou za dané období klesala. 
 
 ```
 SELECT t.branch_name, t.payroll_year, t2.payroll_year AS year_prew, 
@@ -101,7 +101,7 @@ ORDER BY t.branch_name, t.payroll_year)
 SELECT DISTINCT (branch_name)
 FROM salary_growth;
 ```
-3. U zodpovězení druhé otázky si z naší tabulky necháme načíst přehled, kolik je možné si koupit litrů mléka a kilogramů chleba za jednotlivé roky. Z toho vyčteme, že např. u srovnání roků 2006 a 2018, je možné si v roce 2006 koupit za průměrný plat 1,192.25 kg chleba a 1,330.96 l mléka a v roce 2018 1,300.37 kg chleba a 1,590.36 l mléka.
+3. U zodpovězení druhé otázky si z naší tabulky necháme načíst přehled, kolik je možné si koupit litrů mléka a kilogramů chleba za jednotlivé roky. Z toho vyčteme, že např. u srovnání roků 2006 a 2018, je možné si v roce 2006 koupit za průměrný plat **1,192.25 kg chleba a 1,330.96 l mléka a v roce 2018 1,300.37 kg chleba a 1,590.36 l mléka**.
 
 ```
 WITH max_min AS(
@@ -117,3 +117,30 @@ WHERE foodstuff_name IN ('Mléko polotučné pasterované', 'Chléb konzumní km
 GROUP BY foodstuff_name, price_year;
 ```
 
+4. U zodpovězení třetí otázky (Která kategorie potravin zdražuje nejpomaleji (je u ní nejnižší percentuální meziroční nárůst)?) si nejprve vytvoříme VIEW, pomocí kterého si poté výrazem CASE roztřídíme nárůsty jednotlivých kategorií potravin do tří skupin s nejnižším, středním a nejvyšším nárůstem. V dalším dotazu pak zjistíme, že potravina s nejnižším meziročním procentuálním nárůstem je **cukr krystalový**.
+
+```
+CREATE OR REPLACE VIEW interannual_growth AS(
+SELECT t.foodstuff_name, t.price_year, t2.price_year AS prew_year, t.cost, t2.cost cost_prew,
+	   round(((t.cost - t2.cost) / t2.cost * 100), 2) AS growth
+FROM t_Matej_Frolik_project_SQL_primary_final t
+JOIN t_Matej_Frolik_project_SQL_primary_final t2 
+	ON t.foodstuff_name = t2.foodstuff_name
+	AND t.price_year = t2.price_year + 1
+GROUP BY foodstuff_name, price_year);
+
+SELECT foodstuff_name, sum(growth),
+CASE 
+	WHEN sum(growth) < 10 THEN 'nízky meziroční nárůst'
+	WHEN sum(growth) < 40 THEN 'střední meziroční nárůst'
+	ELSE 'vysoký meziroční nárůst'
+END AS interannual_prices_growth
+FROM interannual_growth
+GROUP BY foodstuff_name
+ORDER BY sum(growth); 
+
+SELECT foodstuff_name, sum(growth)
+FROM interannual_growth
+GROUP BY foodstuff_name
+ORDER BY sum(growth);
+```
